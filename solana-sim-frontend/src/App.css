@@ -1,0 +1,20 @@
+.App-header button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  margin-left: 20px;
+}
+
+.App-header button:hover {
+  background-color: #0056b3;
+}
+
+.App-header p {
+  font-size: 18px;
+  margin-top: 20px;
+}
