@@ -1,20 +1,54 @@
-.App-header button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 20px;
-  border: none;
-  background-color: #007bff;
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 10px 20px;
+  background-color: #20232a;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.welcome {
+  font-size: .6em;
+  margin-right: 10px;
+  align-self: flex-start;
+}
+
+.top-button {
+  background-color: #61dafb;
+  border: none;
+  padding: 10px 20px;
+  font-size: 0.6em;
+  color: #20232a;
+  cursor: pointer;
   border-radius: 5px;
-  margin-left: 20px;
+  margin-right: 50px;
 }
 
-.App-header button:hover {
-  background-color: #0056b3;
+.top-button:hover {
+  background-color: #21a1f1;
 }
 
-.App-header p {
-  font-size: 18px;
+img {
   margin-top: 20px;
+  margin-right: 40px;
+  border-radius: 10px;
 }

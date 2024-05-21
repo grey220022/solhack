@@ -98,6 +98,10 @@ function App() {
     return walletAddress !== "8ET2oskezX5Yp6eoNGGxNJKoCNxJgaeJCCphJs3rfPWq" || hasPurchased;
   };
 
+  const formatWalletAddress = (address) => {
+    return `${address.slice(0, 8)}...${address.slice(-4)}`;
+  };
+
   useEffect(() => {
     if (window.solana && window.solana.isPhantom) {
       window.solana.on("connect", () => {
@@ -112,23 +116,25 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {warning && <p style={{ color: 'red' }}>{warning}</p>}
-        {walletAddress ? (
-          <div>
-            <p>Wallet address: {walletAddress}</p>
-            {isVerified ? (
-              isNFTOwner() ? (
-                <img src={QR} alt="Verified" style={{ width: '350px' }} />
+        <div className="top-bar">
+          {walletAddress ? (
+            <>
+              <span className="welcome">Welcome to solana sim, {formatWalletAddress(walletAddress)}</span>
+              {isVerified ? (
+                isNFTOwner() ? (
+                  <img src={QR} alt="Verified" style={{ width: '350px' }} />
+                ) : (
+                  <button className="top-button" onClick={buySolanaSIM}>Buy Solana SIM</button>
+                )
               ) : (
-                <button onClick={buySolanaSIM}>Buy Solana SIM</button>
-              )
-            ) : (
-              <button onClick={signMessage}>Connect Wallet</button>
-            )}
-          </div>
-        ) : (
-          <button onClick={connectWallet}>Connect Wallet</button>
-        )}
+                <button className="top-button" onClick={signMessage}>Sign Message</button>
+              )}
+            </>
+          ) : (
+            <button className="top-button" onClick={connectWallet}>Connect Wallet</button>
+          )}
+        </div>
+        {warning && <p style={{ color: 'red' }}>{warning}</p>}
       </header>
     </div>
   );
