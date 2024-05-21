@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Connection, clusterApiUrl } from '@solana/web3.js';
+import { Connection, clusterApiUrl, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import QR from './QR.PNG';
+import { Buffer } from 'buffer';
 
+window.Buffer = Buffer;
 function App() {
   const [walletAddress, setWalletAddress] = useState(null);
   const [warning, setWarning] = useState('');
-  const [message, setMessage] = useState('Sign this message to authenticate');
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
 
   const connectWallet = async () => {
     if (window.solana && window.solana.isPhantom) {
@@ -38,6 +42,7 @@ function App() {
   const signMessage = async () => {
     if (window.solana && window.solana.isPhantom) {
       try {
+        const message = "Sign this message to log in solana sim." + "\nWallet address: " + walletAddress;
         const encodedMessage = new TextEncoder().encode(message);
         const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8');
         const signature = signedMessage.signature.toString('base64');
@@ -46,7 +51,7 @@ function App() {
         const mockResponse = { success: true };
 
         if (mockResponse.success) {
-          alert('Connection verified successfully');
+          setIsVerified(true); // 设置验证状态为真
         } else {
           alert('Connection verification failed');
         }
@@ -56,6 +61,41 @@ function App() {
     } else {
       alert("Solana object not found! Get a Phantom Wallet 👻");
     }
+  };
+
+  const buySolanaSIM = async () => {
+    if (window.solana && window.solana.isPhantom) {
+      const connection = new Connection(clusterApiUrl('devnet'));
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(walletAddress),
+          toPubkey: new PublicKey('uLFwRn5gaaKa7DUZ72vTmnDfr8yzH991GFNCJpV8RmF'),
+          lamports: 0.01 * LAMPORTS_PER_SOL, // 0.01 SOL
+        })
+      );
+
+      try {
+        const { blockhash } = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = new PublicKey(walletAddress);
+
+        const signedTransaction = await window.solana.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        await connection.confirmTransaction(signature, 'processed');
+
+        alert('Transaction successful!');
+        setHasPurchased(true);
+      } catch (err) {
+        console.error("Transaction failed", err);
+        alert('Transaction failed');
+      }
+    } else {
+      alert("Solana object not found! Get a Phantom Wallet 👻");
+    }
+  };
+
+  const isNFTOwner = () => {
+    return walletAddress !== "8ET2oskezX5Yp6eoNGGxNJKoCNxJgaeJCCphJs3rfPWq" || hasPurchased;
   };
 
   useEffect(() => {
@@ -75,8 +115,16 @@ function App() {
         {warning && <p style={{ color: 'red' }}>{warning}</p>}
         {walletAddress ? (
           <div>
-            <p>Connected to: {walletAddress}</p>
-            <button onClick={signMessage}>Sign Message</button>
+            <p>Wallet address: {walletAddress}</p>
+            {isVerified ? (
+              isNFTOwner() ? (
+                <img src={QR} alt="Verified" style={{ width: '350px' }} />
+              ) : (
+                <button onClick={buySolanaSIM}>Buy Solana SIM</button>
+              )
+            ) : (
+              <button onClick={signMessage}>Connect Wallet</button>
+            )}
           </div>
         ) : (
           <button onClick={connectWallet}>Connect Wallet</button>
