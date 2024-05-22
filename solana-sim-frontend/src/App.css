@@ -69,3 +69,23 @@ img {
   margin-right: 40px;
   border-radius: 10px;
 }
+
+.nav-link {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.nav-link:hover {
+  background-color: #0056b3;
+}
+
+.nav-link:active {
+  background-color: #004085;
+}

@@ -3,10 +3,48 @@ import './App.css';
 import { Connection, clusterApiUrl, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import QR from './QR.PNG';
 import { Buffer } from 'buffer';
-import background from './background.png'; // 引入背景图片
-import head from './head.png'; // 引入头部图片
+import background from './background.png';
+import head from './head.png';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import About from './About';
 
 window.Buffer = Buffer;
+
+function Home({ connectWallet, walletAddress, isVerified, signMessage, buySolanaSIM, isNFTOwner, formatWalletAddress, warning }) {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <div className="top-bar">
+          <img src={head} alt="Head" className="head-image" />
+          <nav className='nav-link'>
+            <Link to="/about">DID</Link>
+          </nav>
+          {walletAddress ? (
+            <>
+              {isVerified ? (
+                <span className="welcome">Hello, {formatWalletAddress(walletAddress)}</span>
+              ) : null}
+              {isVerified ? (
+                isNFTOwner() ? (
+                  <img src={QR} alt="Verified" style={{ width: '350px' }} />
+                ) : (
+                  <button className="top-button" onClick={buySolanaSIM}>Buy Solana SIM</button>
+                )
+              ) : (
+                <button className="top-button" onClick={signMessage}>Login</button>
+              )}
+            </>
+          ) : (
+            <button className="top-button" onClick={connectWallet}>Connect Wallet</button>
+          )}
+        </div>
+        {warning && <p style={{ color: 'red' }}>{warning}</p>}
+        <img src={background} alt="Background" className="background-image" />
+      </header>
+    </div>
+  );
+}
+
 function App() {
   const [walletAddress, setWalletAddress] = useState(null);
   const [warning, setWarning] = useState('');
@@ -49,11 +87,10 @@ function App() {
         const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8');
         const signature = signedMessage.signature.toString('base64');
         console.log("signature", signature);
-        // Mock backend verification
         const mockResponse = { success: true };
 
         if (mockResponse.success) {
-          setIsVerified(true); // 设置验证状态为真
+          setIsVerified(true);
         } else {
           alert('Connection verification failed');
         }
@@ -72,7 +109,7 @@ function App() {
         SystemProgram.transfer({
           fromPubkey: new PublicKey(walletAddress),
           toPubkey: new PublicKey('uLFwRn5gaaKa7DUZ72vTmnDfr8yzH991GFNCJpV8RmF'),
-          lamports: 0.01 * LAMPORTS_PER_SOL, // 0.01 SOL
+          lamports: 0.01 * LAMPORTS_PER_SOL,
         })
       );
 
@@ -110,40 +147,31 @@ function App() {
         setWalletAddress(window.solana.publicKey.toString());
       });
 
-      window.solana.connect({ onlyIfTrusted: true }).catch(() => {
-      });
+      window.solana.connect({ onlyIfTrusted: true }).catch(() => { });
     }
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <div className="top-bar">
-          <img src={head} alt="Head" className="head-image" />
-          {walletAddress ? (
-            <>{
-              isVerified ? (
-              <span className="welcome">Hello, {formatWalletAddress(walletAddress)}</span>
-              ): null
-              }
-              {isVerified ? (
-                isNFTOwner() ? (
-                  <img src={QR} alt="Verified" style={{ width: '350px' }} />
-                ) : (
-                  <button className="top-button" onClick={buySolanaSIM}>Buy Solana SIM</button>
-                )
-              ) : (
-                <button className="top-button" onClick={signMessage}>Login</button>
-              )}
-            </>
-          ) : (
-            <button className="top-button" onClick={connectWallet}>Connect Wallet</button>
-          )}
-        </div>
-        {warning && <p style={{ color: 'red' }}>{warning}</p>}
-        <img src={background} alt="Background" className="background-image" />
-      </header>      
-    </div>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              connectWallet={connectWallet}
+              walletAddress={walletAddress}
+              isVerified={isVerified}
+              signMessage={signMessage}
+              buySolanaSIM={buySolanaSIM}
+              isNFTOwner={isNFTOwner}
+              formatWalletAddress={formatWalletAddress}
+              warning={warning}
+            />
+          }
+        />
+        <Route path="/about" element={<About />} />
+      </Routes>
+    </Router>
   );
 }
 
