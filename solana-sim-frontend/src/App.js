@@ -3,6 +3,8 @@ import './App.css';
 import { Connection, clusterApiUrl, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import QR from './QR.PNG';
 import { Buffer } from 'buffer';
+import background from './background.png'; // 引入背景图片
+import head from './head.png'; // 引入头部图片
 
 window.Buffer = Buffer;
 function App() {
@@ -99,7 +101,7 @@ function App() {
   };
 
   const formatWalletAddress = (address) => {
-    return `${address.slice(0, 8)}...${address.slice(-4)}`;
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
   };
 
   useEffect(() => {
@@ -117,9 +119,13 @@ function App() {
     <div className="App">
       <header className="App-header">
         <div className="top-bar">
+          <img src={head} alt="Head" className="head-image" />
           {walletAddress ? (
-            <>
-              <span className="welcome">Welcome to solana sim, {formatWalletAddress(walletAddress)}</span>
+            <>{
+              isVerified ? (
+              <span className="welcome">Hello, {formatWalletAddress(walletAddress)}</span>
+              ): null
+              }
               {isVerified ? (
                 isNFTOwner() ? (
                   <img src={QR} alt="Verified" style={{ width: '350px' }} />
@@ -127,7 +133,7 @@ function App() {
                   <button className="top-button" onClick={buySolanaSIM}>Buy Solana SIM</button>
                 )
               ) : (
-                <button className="top-button" onClick={signMessage}>Sign Message</button>
+                <button className="top-button" onClick={signMessage}>Login</button>
               )}
             </>
           ) : (
@@ -135,7 +141,8 @@ function App() {
           )}
         </div>
         {warning && <p style={{ color: 'red' }}>{warning}</p>}
-      </header>
+        <img src={background} alt="Background" className="background-image" />
+      </header>      
     </div>
   );
 }
