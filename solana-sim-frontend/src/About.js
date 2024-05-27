@@ -1,11 +1,12 @@
 // About.js
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Connection, clusterApiUrl, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Buffer } from 'buffer';
+import BN from 'bn.js';
 
 window.Buffer = Buffer;
-
+const programId = new PublicKey('BqE2p1PUiUGcY4wXa2mrhsxL8Rw9ki3ZiBsiZu6F64Ne');
+const connection = new Connection(clusterApiUrl('devnet'));
 
 function About() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -21,6 +22,79 @@ function About() {
     }
   };
 
+  const initializeState = async () => {
+    const walletAddress = getWalletAddress();
+    console.log("walletAddress", walletAddress);
+
+    const [pda] = await PublicKey.findProgramAddress(
+      [Buffer.from('global-state')],
+      programId
+    );
+    console.log("pda", pda);
+    const transaction = new Transaction().add({
+      keys: [
+        { pubkey: pda, isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(walletAddress), isSigner: true, isWritable: false },
+      ],
+      programId,
+      //data: Buffer.from([0]), // assuming 0 is the code for initialize in the instruction data
+      data: Buffer.from('afaf6d1f0d989bed', 'hex'),
+    });
+
+    transaction.feePayer = new PublicKey(walletAddress);
+    transaction.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+
+    try {
+      const signed = await window.solana.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(signature);
+
+      setTransactionStatus('Initialization successful!');
+    } catch (error) {
+      console.error('Initialization failed', error);
+      setTransactionStatus(`Initialization failed: ${error.message}`);
+    }
+  };
+
+  const getCounterValue = async () => {
+    const walletAddress = getWalletAddress();
+
+    const pda = await PublicKey.findProgramAddress(['global-state'], programId);
+
+    const accountInfo = await connection.getAccountInfo(pda[0]);
+    if (accountInfo === null) {
+      alert('Account not found');
+      return;
+    }
+
+    const data = accountInfo.data;
+    const counter = new BN(data.slice(8, 16), 'le').toNumber();
+    console.log("counter", counter);
+  };
+
+  const incrementCounter = async () => {
+    const walletAddress = getWalletAddress();
+
+    const pda = await PublicKey.findProgramAddress(['global-state'], programId);
+
+    const transaction = new Transaction().add({
+      keys: [
+        { pubkey: pda[0], isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(walletAddress), isSigner: true, isWritable: false },
+      ],
+      programId,
+      data: Buffer.from([1]), // assuming 1 is the code for increment in the instruction data
+    });
+
+    transaction.feePayer = new PublicKey(walletAddress);
+    transaction.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
+
+    const signed = await window.solana.signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(signed.serialize());
+    await connection.confirmTransaction(signature);
+
+    getCounterValue();
+  };
 
   const sendFund = async () => {
     if (!window.solana || !window.solana.isPhantom) {
